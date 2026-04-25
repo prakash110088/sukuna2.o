@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sukuna Control Panel</title>
+
+  <!-- 📱 Mobile Responsive -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0a0a0a, #1a0000);
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 20px;
+      color: crimson;
+      text-shadow: 0 0 10px red;
+      padding: 10px;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .rc-input {
+      padding: 10px;
+      border: 1px solid red;
+      background: #111;
+      color: white;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .submit-button {
+      background: crimson;
+      color: white;
+    }
+
+    .exit-button {
+      background: black;
+      color: red;
+      border: 1px solid red;
+    }
+
+    .control-panel {
+      text-align: center;
+      padding: 10px;
+    }
+
+    .dropdown, .planet-input {
+      width: 90%;
+      padding: 10px;
+      margin: 6px 0;
+      background: #111;
+      color: white;
+      border: 1px solid red;
+      border-radius: 6px;
+    }
+
+    .fly-button {
+      width: 90%;
+      background: crimson;
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    @media (min-width: 600px) {
+      .container {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 900px) {
+      .container {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>👑 SUKUNA CONTROL PANEL 👑</h1>
+
+<div class="container" id="rc-container"></div>
+
+<div class="container">
+  <button class="submit-button" onclick="handleSubmit()">Activate Sukuna</button>
+  <button class="exit-button" onclick="exitWebSockets()">Destroy</button>
+</div>
+
+<div class="control-panel">
+  <select id="devtype" class="dropdown">
+    <option value="352">Web</option>
+    <option value="312">Android</option>
+    <option value="323">iOS</option>
+  </select>
+
+  <input type="text" id="planetName" class="planet-input" placeholder="Enter Target">
+
+  <button class="fly-button" onclick="flyToPlanet()">Domain Expansion</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<script>
+  // 🔒 DOMAIN ALLOW (CHANGE AFTER DEPLOY)
+  const allowedDomains = [
+    "your-username.github.io",
+    "your-site.netlify.app"
+  ];
+
+  if (!allowedDomains.includes(window.location.hostname)) {
+    alert("Unauthorized Access ❌");
+    throw new Error("Blocked");
+  }
+
+  // create inputs
+  const container = document.getElementById('rc-container');
+
+  for (let i = 1; i <= 50; i++) {
+    const input = document.createElement('input');
+    input.type = 'password';
+    input.className = 'rc-input';
+    input.placeholder = `RC ${i}`;
+
+    // mobile smooth scroll
+    input.addEventListener("focus", () => {
+      input.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    container.appendChild(input);
+  }
+
+  function encryptRC(rc) {
+    return CryptoJS.AES.encrypt(rc, "SUKUNA_KEY").toString();
+  }
+
+  const parseHaaapsi = (e) => {
+    var temp = CryptoJS.MD5(e).toString(CryptoJS.enc.Hex);
+    return (temp.split('').reverse().join('0')).substr(5, 10);
+  };
+
+  let activeWebSockets = [];
+
+  function handleSubmit() {
+
+    if (activeWebSockets.length > 10) {
+      alert("Limit reached ⚠️");
+      return;
+    }
+
+    const inputs = document.querySelectorAll('.rc-input');
+    const devtype = document.getElementById("devtype").value;
+
+    inputs.forEach((input) => {
+      const rc = input.value;
+
+      if (rc) {
+        const encryptedRC = encryptRC(rc);
+
+        const ws = new WebSocket("wss://cs.mobstudio.ru:6672");
+        activeWebSockets.push(ws);
+
+        let haaapsi = null;
+
+        ws.onopen = () => {
+          ws.send(`:en IDENT ${devtype} -2 4030 1 2 :Sukuna\r\n`);
+        };
+
+        ws.onmessage = (event) => {
+          let text = event.data.trim();
+          let parts = text.split(" ");
+
+          if (parts[0] === "HAAAPSI") {
+            haaapsi = parts[1];
+            ws.send(`RECOVER ${encryptedRC}\r\n`);
+          }
+
+          if (parts[0] === "REGISTER") {
+            let id = parts[1];
+            let password = parts[2];
+            let username = parts.slice(3).join(" ");
+            let temp = parseHaaapsi(haaapsi);
+
+            ws.send(`USER ${id} ${password} ${username} ${temp}\r\n`);
+          }
+
+          if (parts[0] === "999") {
+            ws.send("JOIN\r\n");
+          }
+
+          if (parts[0] === "PING") {
+            ws.send("PONG\r\n");
+          }
+        };
+      }
+    });
+  }
+
+  function flyToPlanet() {
+    const planet = document.getElementById("planetName").value;
+
+    activeWebSockets.forEach(ws => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(`JOIN ${planet}\r\n`);
+      }
+    });
+  }
+
+  function exitWebSockets() {
+    activeWebSockets.forEach(ws => {
+      ws.send("QUIT :Sukuna\r\n");
+      ws.close();
+    });
+
+    activeWebSockets = [];
+  }
+
+</script>
+
+</body>
+</html>
