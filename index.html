@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -102,8 +103,8 @@
 <div class="container" id="rc-container"></div>
 
 <div class="container">
-  <button class="submit-button" onclick="handleSubmit()">Activate Sukuna</button>
-  <button class="exit-button" onclick="exitWebSockets()">Destroy</button>
+  <button class="submit-button" onclick="handleSubmit()">Submit</button>
+  <button class="exit-button" onclick="exitWebSockets()">Exit</button>
 </div>
 
 <div class="control-panel">
@@ -113,9 +114,9 @@
     <option value="323">iOS</option>
   </select>
 
-  <input type="text" id="planetName" class="planet-input" placeholder="Enter Target">
+  <input type="text" id="planetName" class="planet-input" placeholder="Planet Name">
 
-  <button class="fly-button" onclick="flyToPlanet()">Domain Expansion</button>
+  <button class="fly-button" onclick="flyToPlanet()">Fly</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -124,7 +125,7 @@
   // 🔒 DOMAIN ALLOW (CHANGE AFTER DEPLOY)
   const allowedDomains = [
     "prakash110088.github.io",
-    "your-site.netlify.app"
+    "localhost"
   ];
 
   if (!allowedDomains.includes(window.location.hostname)) {
@@ -217,10 +218,11 @@
 
   function flyToPlanet() {
     const planet = document.getElementById("planetName").value;
+    if (planetName) {
 
     activeWebSockets.forEach(ws => {
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(`JOIN ${planet}\r\n`);
+        ws.send(`JOIN ${planetName}\r\n`);
       }
     });
   }
@@ -229,6 +231,7 @@
     activeWebSockets.forEach(ws => {
       ws.send("QUIT :Sukuna\r\n");
       ws.close();
+      }
     });
 
     activeWebSockets = [];
